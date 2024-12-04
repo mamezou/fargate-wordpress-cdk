@@ -1,16 +1,49 @@
-import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import {
+  aws_ec2 as ec2,
+} from 'aws-cdk-lib';
 
-export class FargateWordpressCdkStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class FargateWordpressCdkStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    /**
+    * Create a VPC
+    */
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'FargateWordpressCdkQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+
+    /**
+    * Create SG
+    */
+
+    /**
+    * Create Amazon RDS
+    */
+
+    /**
+    * Create a ALB
+    */
+
+    /**
+    * Create a Targate Group
+    */
+
+    /**
+    * Create a ECR
+    */
+
+    /**
+    * Create a ECS Cluster
+    */
+
+    /**
+    * Create a ECS Task Definition
+    */
+
+    /**
+    * Create a ECS Service
+    */
+
   }
 }
