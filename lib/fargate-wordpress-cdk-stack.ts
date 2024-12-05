@@ -76,28 +76,28 @@ export class FargateWordpressCdkStack extends Stack {
     const sgELB = new ec2.SecurityGroup(this, 'sgELB', {
       vpc,
       description: 'Security Group for ELB allowing inbound HTTP traffic from the internet',
-      securityGroupName: 'sg-elb'
+      securityGroupName: 'elb-sg'
     })
     sgELB.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Allow HTTP traffic from the world')
 
     const sgAPP = new ec2.SecurityGroup(this, 'sgAPP', {
       vpc,
       description: 'Security Group for application servers allowing HTTP traffic from the ELB',
-      securityGroupName: 'sg-app'
+      securityGroupName: 'app-sg'
     })
     sgAPP.addIngressRule(sgELB, ec2.Port.tcp(80), 'Allow HTTP traffic from the ELB')
 
     const sgDB = new ec2.SecurityGroup(this, 'sgDB', {
       vpc,
       description: 'Security Group for RDS database allowing MySQL traffic from application servers',
-      securityGroupName: 'sg-db'
+      securityGroupName: 'db-sg'
     })
     sgDB.addIngressRule(sgAPP, ec2.Port.tcp(3306), 'Allow MySQL traffic from application security group')
 
     const sgEFS = new ec2.SecurityGroup(this, 'sgEFS', {
       vpc,
       description: 'Security Group for EFS allowing NFS traffic from application servers',
-      securityGroupName: 'sg-efs'
+      securityGroupName: 'efs-sg'
     });
     sgEFS.addIngressRule(sgAPP, ec2.Port.tcp(2049), 'Allow NFS traffic from application servers');
 
