@@ -1,7 +1,8 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import {
   aws_ec2 as ec2,
+  aws_efs as efs,
 } from 'aws-cdk-lib';
 
 export class FargateWordpressCdkStack extends Stack {
@@ -100,6 +101,27 @@ export class FargateWordpressCdkStack extends Stack {
       securityGroupName: 'efs-sg'
     });
     sgEFS.addIngressRule(sgAPP, ec2.Port.tcp(2049), 'Allow NFS traffic from application servers');
+
+    /**
+     * Create Amazon EFS
+     */
+    const fileSystem = new efs.FileSystem(this, 'WpFileSystem', {
+      vpc,
+      lifecyclePolicy: efs.LifecyclePolicy.AFTER_14_DAYS,
+      securityGroup: sgEFS,
+      removalPolicy: RemovalPolicy.DESTROY,
+      encrypted: true
+    });
+
+    // # Setting Later
+    // vpc.selectSubnets({ subnetGroupName: 'filesystem' }).subnets.forEach((subnet, index) => {
+    //   new efs.CfnMountTarget(this, `MountTarget${index}`, {
+    //     fileSystemId: fileSystem.fileSystemId,
+    //     subnetId: subnet.subnetId,
+    //     securityGroups: [sgEFS.securityGroupId]
+    //   });
+    // });
+
 
     /**
      * Create Amazon RDS
