@@ -9,41 +9,98 @@ export class FargateWordpressCdkStack extends Stack {
     super(scope, id, props);
 
     /**
-    * Create a VPC
-    */
-
+     * Create a VPC
+     */
+    const vpc = new ec2.Vpc(this, 'VPC', {
+      cidr: '10.0.0.0/16',
+      maxAzs: 2,
+      subnetConfiguration: [
+        {
+          // LB & NAT Subnet
+          cidrMask: 24,
+          name: 'ingress',
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+        {
+          // Apllication Subnet
+          cidrMask: 24,
+          name: 'application',
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        },
+        {
+          // FileSystem Subnet
+          cidrMask: 24,
+          name: 'filesystem',
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        },
+        {
+          // Database Subnet
+          cidrMask: 24,
+          name: 'database',
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        }
+      ],
+    });
 
     /**
-    * Create SG
-    */
+     * add VPC EndPoints
+     */
+    // Get the application subnets
+    const applicationSubnets = vpc.selectSubnets({
+      subnetGroupName: 'application'
+    });
+
+    vpc.addGatewayEndpoint('s3GwEndpoint', {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
+      subnets: [{ subnets: applicationSubnets.subnets }]
+    })
+
+    vpc.addInterfaceEndpoint('ecrEndpoint', {
+      service: ec2.InterfaceVpcEndpointAwsService.ECR,
+      subnets: { subnets: applicationSubnets.subnets }
+    });
+
+    vpc.addInterfaceEndpoint('systemsmanagerEndpoint', {
+      service: ec2.InterfaceVpcEndpointAwsService.SSM,
+      subnets: { subnets: applicationSubnets.subnets }
+    });
+
+    vpc.addInterfaceEndpoint('cloudwatchEndpoint', {
+      service: ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
+      subnets: { subnets: applicationSubnets.subnets }
+    });
 
     /**
-    * Create Amazon RDS
-    */
+     * Create SG
+     */
 
     /**
-    * Create a ALB
-    */
+     * Create Amazon RDS
+     */
 
     /**
-    * Create a Targate Group
-    */
+     * Create a ALB
+     */
 
     /**
-    * Create a ECR
-    */
+     * Create a Targate Group
+     */
 
     /**
-    * Create a ECS Cluster
-    */
+     * Create a ECR
+     */
 
     /**
-    * Create a ECS Task Definition
-    */
+     * Create a ECS Cluster
+     */
 
     /**
-    * Create a ECS Service
-    */
+     * Create a ECS Task Definition
+     */
+
+    /**
+     * Create a ECS Service
+     */
 
   }
 }
