@@ -4,7 +4,8 @@ import {
   aws_ec2 as ec2,
   aws_efs as efs,
   aws_rds as rds,
-  aws_secretsmanager as secretsmanager
+  aws_secretsmanager as secretsmanager,
+  aws_ecs as ecs
 } from 'aws-cdk-lib';
 
 export class FargateWordpressCdkStack extends Stack {
@@ -175,6 +176,7 @@ export class FargateWordpressCdkStack extends Stack {
     /**
      * Create a ECS Cluster
      */
+    const cluster = new ecs.Cluster(this, 'wpCluster', { vpc });
 
     /**
      * Create a ECS Task Definition
