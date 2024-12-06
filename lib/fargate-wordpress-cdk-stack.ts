@@ -10,6 +10,14 @@ import {
   aws_elasticloadbalancingv2 as elbv2,
 } from 'aws-cdk-lib';
 import * as ecrdeploy from 'cdk-ecr-deployment';
+import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
+import * as path from 'path';
+
+const imageTag = 'v1.0.1'
+const TEMP_DB_USER = 'testuseradmin'
+const TEMP_DB_PASS = 'kyouryokuna-passw0rd'
+const DB_NAME = 'wordpress'
+
 
 export class FargateWordpressCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -152,15 +160,10 @@ export class FargateWordpressCdkStack extends Stack {
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO),
       securityGroups: [sgDB],
       // multiAz: true,
-      databaseName: 'testdatabase',
+      databaseName: DB_NAME,
       removalPolicy: RemovalPolicy.DESTROY,
-      // credentials: rds.Credentials.fromPassword(
-      //   dbCredentialSecret.secretValueFromJson('username').toString(),
-      //   SecretValue.unsafePlainText(
-      //     dbCredentialSecret.secretValueFromJson('password').toString()
-      //   )
-      // ),
-      credentials: rds.Credentials.fromSecret(dbCredentialSecret),
+      // credentials: rds.Credentials.fromSecret(dbCredentialSecret),
+      credentials: rds.Credentials.fromPassword(TEMP_DB_USER, SecretValue.unsafePlainText(TEMP_DB_PASS)),
     })
 
 
@@ -201,7 +204,6 @@ export class FargateWordpressCdkStack extends Stack {
     /**
      * Create a ECR
      */
-    // ECRリポジトリの作成
     const repository = new ecr.Repository(this, 'wpRepository', {
       repositoryName: 'wordpress',
       imageScanOnPush: true,
@@ -209,10 +211,14 @@ export class FargateWordpressCdkStack extends Stack {
       autoDeleteImages: true,
     });
 
+    const asset = new DockerImageAsset(this, 'wordPressImage', {
+      directory: path.join(__dirname, '../app'),
+    });
+
     new ecrdeploy.ECRDeployment(this, 'deployWordPressImage', {
-      src: new ecrdeploy.DockerImageName('wordpress:latest'),
-      dest: new ecrdeploy.DockerImageName(`${repository.repositoryUri}:latest`)
-    })
+      src: new ecrdeploy.DockerImageName(asset.imageUri),
+      dest: new ecrdeploy.DockerImageName(`${repository.repositoryUri}:${imageTag}`),
+    });
 
     /**
      * Create a ECS Cluster
@@ -229,17 +235,19 @@ export class FargateWordpressCdkStack extends Stack {
 
 
     const container = taskDefinition.addContainer('AppContainer', {
-      image: ecs.ContainerImage.fromRegistry('wordpress'),
+      image: ecs.ContainerImage.fromEcrRepository(repository, imageTag),
       logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'WordPress' }),
       environment: {
         DB_HOST: mysql.instanceEndpoint.hostname,
         DB_PORT: String(mysql.instanceEndpoint.port),
-        DB_NAME: 'testdatabase',
+        DB_NAME: DB_NAME,
+        DB_USER: TEMP_DB_USER,
+        DB_PASS: TEMP_DB_PASS
       },
-      secrets: {
-        DB_USER: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'username'),
-        APP_DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'password'),
-      },
+      // secrets: {
+      //   DB_USER: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'username'),
+      //   DB_PASS: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'password'),
+      // },
     });
 
     container.addPortMappings({
@@ -255,7 +263,7 @@ export class FargateWordpressCdkStack extends Stack {
     const fargateService = new ecs.FargateService(this, 'fargateSpotService', {
       cluster,
       taskDefinition,
-      desiredCount: 2,
+      desiredCount: 1,
       securityGroups: [sgAPP],
       capacityProviderStrategies: [
         {
