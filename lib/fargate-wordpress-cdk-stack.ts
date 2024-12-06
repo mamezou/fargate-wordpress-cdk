@@ -10,6 +10,8 @@ import {
   aws_elasticloadbalancingv2 as elbv2,
 } from 'aws-cdk-lib';
 import * as ecrdeploy from 'cdk-ecr-deployment';
+import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
+import * as path from 'path';
 
 export class FargateWordpressCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -209,11 +211,15 @@ export class FargateWordpressCdkStack extends Stack {
       autoDeleteImages: true,
     });
 
-    new ecrdeploy.ECRDeployment(this, 'deployWordPressImage', {
-      src: new ecrdeploy.DockerImageName('wordpress:latest'),
-      dest: new ecrdeploy.DockerImageName(`${repository.repositoryUri}:latest`)
-    })
+    // Dockerイメージアセットの作成（appディレクトリからビルド）
+    const asset = new DockerImageAsset(this, 'wordPressImage', {
+      directory: path.join(__dirname, '../app'),
+    });
 
+    new ecrdeploy.ECRDeployment(this, 'deployWordPressImage', {
+      src: new ecrdeploy.DockerImageName(asset.imageUri),
+      dest: new ecrdeploy.DockerImageName(`${repository.repositoryUri}:latest`),
+    });
     /**
      * Create a ECS Cluster
      */
@@ -229,7 +235,7 @@ export class FargateWordpressCdkStack extends Stack {
 
 
     const container = taskDefinition.addContainer('AppContainer', {
-      image: ecs.ContainerImage.fromRegistry('wordpress'),
+      image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
       logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'WordPress' }),
       environment: {
         DB_HOST: mysql.instanceEndpoint.hostname,
@@ -238,7 +244,7 @@ export class FargateWordpressCdkStack extends Stack {
       },
       secrets: {
         DB_USER: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'username'),
-        APP_DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'password'),
+        DB_PASS: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'password'),
       },
     });
 
@@ -255,7 +261,7 @@ export class FargateWordpressCdkStack extends Stack {
     const fargateService = new ecs.FargateService(this, 'fargateSpotService', {
       cluster,
       taskDefinition,
-      desiredCount: 2,
+      desiredCount: 1,
       securityGroups: [sgAPP],
       capacityProviderStrategies: [
         {
