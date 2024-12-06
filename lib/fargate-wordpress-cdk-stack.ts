@@ -5,8 +5,10 @@ import {
   aws_efs as efs,
   aws_rds as rds,
   aws_secretsmanager as secretsmanager,
-  aws_ecs as ecs
+  aws_ecs as ecs,
+  aws_ecr as ecr
 } from 'aws-cdk-lib';
+import * as ecrdeploy from 'cdk-ecr-deployment';
 
 export class FargateWordpressCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -172,6 +174,17 @@ export class FargateWordpressCdkStack extends Stack {
     /**
      * Create a ECR
      */
+    // ECRリポジトリの作成
+    const repository = new ecr.Repository(this, 'wpRepository', {
+      repositoryName: 'wordpress',
+      imageScanOnPush: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    new ecrdeploy.ECRDeployment(this, 'deployWordPressImage', {
+      src: new ecrdeploy.DockerImageName('wordpress:latest'),
+      dest: new ecrdeploy.DockerImageName(`${repository.repositoryUri}:latest`)
+    })
 
     /**
      * Create a ECS Cluster
