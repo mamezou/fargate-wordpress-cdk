@@ -194,10 +194,49 @@ export class FargateWordpressCdkStack extends Stack {
     /**
      * Create a ECS Task Definition
      */
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'taskDef', {
+      memoryLimitMiB: 512,
+      cpu: 256,
+    });
+
+    taskDefinition.addContainer('AppContainer', {
+      image: ecs.ContainerImage.fromRegistry('wordpress'),
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'WordPress' }),
+    });
 
     /**
      * Create a ECS Service
      */
+    const fargateService = new ecs.FargateService(this, 'fargateSpotService', {
+      cluster,
+      taskDefinition,
+      desiredCount: 2,
+      capacityProviderStrategies: [
+        {
+          capacityProvider: 'FARGATE_SPOT',
+          weight: 1,
+        },
+        {
+          capacityProvider: 'FARGATE',
+          weight: 0,
+        },
+      ],
+    });
+
+    const scalableTarget = fargateService.autoScaleTaskCount({
+      minCapacity: 1,
+      maxCapacity: 10,
+    });
+
+    // Scaling Policy for CPU
+    scalableTarget.scaleOnCpuUtilization('cpuScaling', {
+      targetUtilizationPercent: 50,
+    });
+
+    // Scaling Policy for Memory
+    scalableTarget.scaleOnMemoryUtilization('MemoryScaling', {
+      targetUtilizationPercent: 50,
+    });
 
   }
 }
