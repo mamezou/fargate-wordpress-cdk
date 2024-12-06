@@ -6,7 +6,8 @@ import {
   aws_rds as rds,
   aws_secretsmanager as secretsmanager,
   aws_ecs as ecs,
-  aws_ecr as ecr
+  aws_ecr as ecr,
+  aws_elasticloadbalancingv2 as elbv2,
 } from 'aws-cdk-lib';
 import * as ecrdeploy from 'cdk-ecr-deployment';
 
@@ -166,10 +167,36 @@ export class FargateWordpressCdkStack extends Stack {
     /**
      * Create a ALB
      */
+    const alb = new elbv2.ApplicationLoadBalancer(this, 'wpAlb', {
+      vpc,
+      securityGroup: sgELB,
+      internetFacing: true,
+      loadBalancerName: 'ALB',
+    })
+
+    const listener = alb.addListener('wpListener', {
+      port: 80,
+      open: true,
+    })
 
     /**
      * Create a Targate Group
      */
+    const targetGroup = new elbv2.ApplicationTargetGroup(this, 'wpTargetGroup', {
+      vpc,
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+    })
+
+    listener.addTargetGroups('wpTargetGroup', {
+      targetGroups: [targetGroup],
+    })
+
+    targetGroup.configureHealthCheck({
+      path: '/',
+      healthyHttpCodes: '200,302',
+    });
 
     /**
      * Create a ECR
@@ -179,6 +206,7 @@ export class FargateWordpressCdkStack extends Stack {
       repositoryName: 'wordpress',
       imageScanOnPush: true,
       removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteImages: true,
     });
 
     new ecrdeploy.ECRDeployment(this, 'deployWordPressImage', {
@@ -199,10 +227,27 @@ export class FargateWordpressCdkStack extends Stack {
       cpu: 256,
     });
 
-    taskDefinition.addContainer('AppContainer', {
+
+    const container = taskDefinition.addContainer('AppContainer', {
       image: ecs.ContainerImage.fromRegistry('wordpress'),
       logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'WordPress' }),
+      environment: {
+        DB_HOST: mysql.instanceEndpoint.hostname,
+        DB_PORT: String(mysql.instanceEndpoint.port),
+        DB_NAME: 'testdatabase',
+      },
+      secrets: {
+        DB_USER: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'username'),
+        APP_DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'password'),
+      },
     });
+
+    container.addPortMappings({
+      hostPort: 80,
+      containerPort: 80,
+      protocol: ecs.Protocol.TCP,
+    })
+
 
     /**
      * Create a ECS Service
@@ -211,6 +256,7 @@ export class FargateWordpressCdkStack extends Stack {
       cluster,
       taskDefinition,
       desiredCount: 2,
+      securityGroups: [sgAPP],
       capacityProviderStrategies: [
         {
           capacityProvider: 'FARGATE_SPOT',
@@ -237,6 +283,8 @@ export class FargateWordpressCdkStack extends Stack {
     scalableTarget.scaleOnMemoryUtilization('MemoryScaling', {
       targetUtilizationPercent: 50,
     });
+
+    fargateService.attachToApplicationTargetGroup(targetGroup)
 
   }
 }
