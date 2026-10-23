@@ -6,7 +6,23 @@ AWS FargateとCDKを使用して、コンテナ化されたWordPress環境を構
 
 ## **アーキテクチャ**
 
-**WIP: アーキテクチャ図載せる**
+```mermaid
+flowchart TB
+    User["ユーザー"] --> ALB
+
+    subgraph VPC["Amazon VPC (2AZ)"]
+        ALB["Application Load Balancer"]
+        ECS["ECS Fargate タスク<br/>(WordPress)"]
+        RDS["Amazon RDS (MySQL・マルチAZ)"]
+        EFS["Amazon EFS (wp-content)"]
+        VPCE["VPCエンドポイント"]
+
+        ALB --> ECS
+        ECS --> RDS
+        ECS --> EFS
+        ECS --> VPCE
+    end
+```
 
 ### **主要コンポーネント**
 1. **Amazon VPC**:
