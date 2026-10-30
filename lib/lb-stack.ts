@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import {
   aws_ec2 as ec2,
@@ -48,6 +48,8 @@ export class loadBalancerStack extends Stack {
       path: '/',
       healthyHttpCodes: '200,302',
     });
+
+    new CfnOutput(this, 'LoadBalancerDns', { value: alb.loadBalancerDnsName })
 
     this.targetGroup = targetGroup
   }

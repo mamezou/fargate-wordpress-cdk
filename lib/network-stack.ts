@@ -110,7 +110,7 @@ export class networkStack extends Stack {
       description: 'Security Group for EFS traffic from application servers',
       securityGroupName: 'db-efs'
     })
-    sgDB.addIngressRule(sgAPP, ec2.Port.tcp(2049), 'Allow NFS traffic from application security group')
+    sgEFS.addIngressRule(sgAPP, ec2.Port.tcp(2049), 'Allow NFS traffic from application security group')
 
 
     this.vpc = vpc

@@ -11,6 +11,8 @@ interface Props extends StackProps {
 }
 
 export class StorageStack extends Stack {
+  public readonly fileSystem: efs.FileSystem;
+  public readonly accessPoint: efs.AccessPoint;
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
 
@@ -25,27 +27,21 @@ export class StorageStack extends Stack {
       encrypted: true
     });
 
-    // # Setting Later
-    // vpc.selectSubnets({ subnetGroupName: 'filesystem' }).subnets.forEach((subnet, index) => {
-    //   new efs.CfnMountTarget(this, `MountTarget${index}`, {
-    //     fileSystemId: fileSystem.fileSystemId,
-    //     subnetId: subnet.subnetId,
-    //     securityGroups: [sgEFS.securityGroupId]
-    //   });
-    // });
+    // wp-content を置くアクセスポイント。コンテナの www-data(uid/gid 33)として読み書きする
+    const accessPoint = fileSystem.addAccessPoint('wpContentAccessPoint', {
+      path: '/wp-content',
+      createAcl: {
+        ownerUid: '33',
+        ownerGid: '33',
+        permissions: '755',
+      },
+      posixUser: {
+        uid: '33',
+        gid: '33',
+      },
+    });
 
-    // const accessPoint = fileSystem.addAccessPoint('accessPoint', {
-    //   path: '/wordpress',
-    //   createAcl: {
-    //     ownerUid: '33',
-    //     ownerGid: '33',
-    //     permissions: '755',
-    //   },
-    //   posixUser: {
-    //     uid: '33',
-    //     gid: '33',
-    //   },
-    // });
-
+    this.fileSystem = fileSystem
+    this.accessPoint = accessPoint
   }
 }

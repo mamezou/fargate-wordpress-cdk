@@ -3,8 +3,6 @@ import { Construct } from 'constructs';
 import {
   aws_ec2 as ec2,
   aws_rds as rds,
-  // aws_secretsmanager as secretsmanager,
-  // aws_iam as iam
 } from 'aws-cdk-lib';
 import params from './params';
 
@@ -21,18 +19,6 @@ export class databaseStack extends Stack {
     /**
      * Create Amazon RDS
      */
-    // const dbCredentialSecret = new secretsmanager.Secret(this, 'dbCredentialSecret', {
-    //   secretName: "mysql",
-    //   generateSecretString: {
-    //     excludePunctuation: true,
-    //     includeSpace: false,
-    //     secretStringTemplate: JSON.stringify({
-    //       username: 'dbuser',
-    //     }),
-    //     generateStringKey: 'password',
-    //   }
-    // })
-
     const mysql = new rds.DatabaseInstance(this, 'wpDatabase', {
       engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_0 }),
       vpc: props.vpc,
@@ -44,8 +30,8 @@ export class databaseStack extends Stack {
       // multiAz: true,
       databaseName: params.DB_NAME,
       removalPolicy: RemovalPolicy.DESTROY,
-      // credentials: rds.Credentials.fromSecret(dbCredentialSecret),
-      credentials: rds.Credentials.fromPassword(params.TEMP_DB_USER, SecretValue.unsafePlainText(params.TEMP_DB_PASS)),
+      // パスワードは Parameter Store の SecureString を CloudFormation の動的参照で読む
+      credentials: rds.Credentials.fromPassword(params.DB_USER, SecretValue.ssmSecure(params.DB_PASSWORD_PARAMETER)),
     })
 
     this.mysql = mysql

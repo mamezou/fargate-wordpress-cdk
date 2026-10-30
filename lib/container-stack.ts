@@ -7,10 +7,11 @@ import {
   aws_ecs as ecs,
   aws_ecr as ecr,
   aws_elasticloadbalancingv2 as elbv2,
-  aws_iam as iam
+  aws_efs as efs,
+  aws_ssm as ssm,
 } from 'aws-cdk-lib';
 import * as ecrdeploy from 'cdk-ecr-deployment';
-import { DockerImageAsset } from 'aws-cdk-lib/aws-ecr-assets';
+import { DockerImageAsset, Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import * as path from 'path';
 import params from './params';
 
@@ -20,7 +21,9 @@ interface Props extends StackProps {
   vpc: ec2.Vpc,
   sgAPP: ec2.SecurityGroup,
   mysql: rds.DatabaseInstance,
-  targetGroup: elbv2.ApplicationTargetGroup
+  targetGroup: elbv2.ApplicationTargetGroup,
+  fileSystem: efs.FileSystem,
+  accessPoint: efs.AccessPoint
 }
 
 export class containerStack extends Stack {
@@ -37,8 +40,10 @@ export class containerStack extends Stack {
       autoDeleteImages: true,
     });
 
+    // Fargate のタスクは x86_64 で動くため、Apple Silicon の Mac でビルドしても amd64 のイメージにする
     const asset = new DockerImageAsset(this, 'wordPressImage', {
       directory: path.join(__dirname, '../app'),
+      platform: Platform.LINUX_AMD64,
     });
 
     new ecrdeploy.ECRDeployment(this, 'deployWordPressImage', {
@@ -54,48 +59,29 @@ export class containerStack extends Stack {
     /**
      * Create a ECS Task Definition
      */
-    // const taskExecutionRole = new iam.Role(this, 'taskExecutionRole', {
-    //   assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-    // });
-
-    // taskExecutionRole.addToPolicy(new iam.PolicyStatement({
-    //   actions: [
-    //     'secretsmanager:GetSecretValue',
-    //     'kms:Decrypt',
-    //   ],
-    //   resources: [
-    //     dbCredentialSecret.secretArn,
-    //   ],
-    // }));
-
-    // // EFSアクセス権限
-    // taskRole.addToPolicy(new iam.PolicyStatement({
-    //   actions: [
-    //     'elasticfilesystem:ClientMount',
-    //     'elasticfilesystem:ClientWrite',
-    //     'elasticfilesystem:DescribeMountTargets',
-    //   ],
-    //   resources: ['*'],
-    // }));
-
     const taskDefinition = new ecs.FargateTaskDefinition(this, 'taskDef', {
       memoryLimitMiB: 512,
       cpu: 256,
-      // executionRole: taskExecutionRole
     });
 
-    // taskDefinition.addVolume({
-    //   name: 'efs-volume',
-    //   efsVolumeConfiguration: {
-    //     fileSystemId: fileSystem.fileSystemId,
-    //     authorizationConfig: {
-    //       accessPointId: accessPoint.accessPointId,
-    //       iam: 'ENABLED',
-    //     },
-    //     transitEncryption: 'ENABLED',
-    //   },
-    // });
+    // wp-content を EFS に置き、タスクが増えてもアップロードしたファイルを共有する
+    taskDefinition.addVolume({
+      name: 'wp-content',
+      efsVolumeConfiguration: {
+        fileSystemId: props.fileSystem.fileSystemId,
+        transitEncryption: 'ENABLED',
+        authorizationConfig: {
+          accessPointId: props.accessPoint.accessPointId,
+          iam: 'ENABLED',
+        },
+      },
+    });
+    props.fileSystem.grantReadWrite(taskDefinition.taskRole);
 
+    // DBのパスワード(Parameter Store の SecureString)。タスクの起動時に環境変数 DB_PASS として渡る
+    const dbPassword = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'dbPassword', {
+      parameterName: params.DB_PASSWORD_PARAMETER,
+    });
 
     const container = taskDefinition.addContainer('AppContainer', {
       image: ecs.ContainerImage.fromEcrRepository(repository, imageTag),
@@ -104,13 +90,11 @@ export class containerStack extends Stack {
         DB_HOST: props.mysql.instanceEndpoint.hostname,
         DB_PORT: String(props.mysql.instanceEndpoint.port),
         DB_NAME: params.DB_NAME,
-        DB_USER: params.TEMP_DB_USER,
-        DB_PASS: params.TEMP_DB_PASS
+        DB_USER: params.DB_USER,
       },
-      // secrets: {
-      //   DB_USER: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'username'),
-      //   DB_PASS: ecs.Secret.fromSecretsManager(dbCredentialSecret, 'password'),
-      // },
+      secrets: {
+        DB_PASS: ecs.Secret.fromSsmParameter(dbPassword),
+      },
     });
 
     container.addPortMappings({
@@ -119,11 +103,11 @@ export class containerStack extends Stack {
       protocol: ecs.Protocol.TCP,
     })
 
-    // container.addMountPoints({
-    //   containerPath: '/var/www/html/wp-content',
-    //   sourceVolume: 'efs-volume',
-    //   readOnly: false,
-    // });
+    container.addMountPoints({
+      containerPath: '/var/www/html/wp-content',
+      sourceVolume: 'wp-content',
+      readOnly: false,
+    });
 
     /**
      * Create a ECS Service
