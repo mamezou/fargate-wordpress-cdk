@@ -187,11 +187,11 @@
         <mxCell id="e-box-ifep" edge="1" parent="1" source="ecs-box" target="ifep" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;exitX=1;exitY=0.4583;entryX=0;entryY=0.5;" value="">
           <mxGeometry relative="1" as="geometry"></mxGeometry>
         </mxCell>
-        <mxCell id="e-ifep-ecr" edge="1" parent="1" source="ifep" target="ecr" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;exitX=1;exitY=0.25;entryX=0.5;entryY=1;entryDy=46;entryPerimeter=0;" value="ECR API の呼び出し">
-          <mxGeometry x="-0.2" relative="1" as="geometry"><Array as="points"><mxPoint x="1460" y="495" /></Array></mxGeometry>
+        <mxCell id="e-ifep-ecr" edge="1" parent="1" source="ifep" target="ecr" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;exitX=1;exitY=0.25;entryX=0;entryY=0.5;entryPerimeter=0;exitPerimeter=0;" value="ECR API の呼び出し">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><Array as="points"><mxPoint x="1400" y="495" /><mxPoint x="1400" y="390" /></Array></mxGeometry>
         </mxCell>
-        <mxCell id="e-ifep-logs" edge="1" parent="1" source="ifep" target="logs" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;exitX=1;exitY=0.75;entryX=0.5;entryY=0;" value="ログの配送">
-          <mxGeometry x="-0.2" relative="1" as="geometry"><Array as="points"><mxPoint x="1460" y="525" /></Array></mxGeometry>
+        <mxCell id="e-ifep-logs" edge="1" parent="1" source="ifep" target="logs" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;exitX=1;exitY=0.75;entryX=0;entryY=0.5;entryPerimeter=0;exitPerimeter=0;" value="ログの配送">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><Array as="points"><mxPoint x="1400" y="525" /><mxPoint x="1400" y="630" /></Array></mxGeometry>
         </mxCell>
         <mxCell id="e-box-gwep" edge="1" parent="1" source="ecs-box" target="gwep" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;exitX=1;exitY=0.9876;entryX=0;entryY=0.5;" value="イメージレイヤーの取得">
           <mxGeometry x="0.2" relative="1" as="geometry"></mxGeometry>
@@ -199,11 +199,8 @@
         <mxCell id="e-gwep-s3" edge="1" parent="1" source="gwep" target="s3" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" value="">
           <mxGeometry relative="1" as="geometry"></mxGeometry>
         </mxCell>
-        <mxCell id="note1" parent="1" style="fontFamily=IPAPGothic;text;html=1;fontSize=12;fontStyle=0;align=left;verticalAlign=middle;fontColor=#414D5C;" value="注記: タスク定義に EFS のマウント設定がないため、タスクは EFS を使わない" vertex="1">
+                <mxCell id="note2" parent="1" style="fontFamily=IPAPGothic;text;html=1;fontSize=12;fontStyle=0;align=left;verticalAlign=middle;fontColor=#414D5C;" value="注記: RDS の配置先 AZ は作成時に決まり、図では AZ 1 に置いている" vertex="1">
           <mxGeometry height="24" width="760" x="160" y="928" as="geometry" />
-        </mxCell>
-        <mxCell id="note2" parent="1" style="fontFamily=IPAPGothic;text;html=1;fontSize=12;fontStyle=0;align=left;verticalAlign=middle;fontColor=#414D5C;" value="注記: RDS の配置先 AZ は作成時に決まり、図では AZ 1 に置いている" vertex="1">
-          <mxGeometry height="24" width="760" x="160" y="956" as="geometry" />
         </mxCell>
         <mxCell id="legend-blue" parent="1" style="fontFamily=IPAPGothic;line;html=1;strokeWidth=2.5;strokeColor=#147EBA;" value="" vertex="1">
           <mxGeometry height="10" width="60" x="960" y="940" as="geometry" />
@@ -216,6 +213,21 @@
         </mxCell>
         <mxCell id="legend-gray-text" parent="1" style="fontFamily=IPAPGothic;text;html=1;fontSize=12;fontStyle=0;align=left;verticalAlign=middle;fontColor=#414D5C;" value="タスクから始まる通信" vertex="1">
           <mxGeometry height="26" width="320" x="1032" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="param" parent="1" style="fontFamily=IPAPGothic;sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=none;html=1;aspect=fixed;shape=mxgraph.aws4.parameter_store;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="1430" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="param-label" parent="1" style="fontFamily=IPAPGothic;text;html=1;fontSize=12;fontStyle=0;align=center;verticalAlign=top;fontColor=#232F3E;whiteSpace=wrap;labelBackgroundColor=#FFFFFF;" value="&lt;b&gt;Parameter Store&lt;/b&gt;&lt;br&gt;DB のパスワード" vertex="1">
+          <mxGeometry height="40" width="150" x="1385" y="543" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ifep-param" edge="1" parent="1" source="ifep" target="param" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;entryPerimeter=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=0;" value="パラメータの取得">
+          <mxGeometry x="0.6" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-task1-mt1" edge="1" parent="1" source="task1" target="mt1" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;entryPerimeter=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=0;" value="NFS (2049)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-task2-mt2" edge="1" parent="1" source="task2" target="mt2" style="fontFamily=IPAPGothic;edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;labelBackgroundColor=#FFFFFF;strokeColor=#414D5C;strokeWidth=1.5;fontSize=11;fontColor=#414D5C;entryPerimeter=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=0;" value="NFS (2049)">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
