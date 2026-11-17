@@ -13,7 +13,7 @@ WordPressをAWS Fargateのコンテナで動かす環境を、AWS CDKで作る�
 | VPC | 2つのAZに、ingress(パブリック)、application、filesystem、databaseの4種類のサブネットを置く。filesystemサブネットには何も置いていないため、図では省いている |
 | NATゲートウェイ | AZごとに1つ。applicationサブネットからの外向きの通信(ECRのレジストリなど)が通る |
 | ECS(Fargate) | タスクはapplicationサブネットで動く。Fargate Spotで実行し、最初は1つ |
-| RDS | MySQL 8.0(db.t3.micro)。シングルAZで、databaseサブネットに置く |
+| RDS | MySQL 8.4(db.t3.micro)。シングルAZで、databaseサブネットに置く |
 | EFS | WordPressの`wp-content`を、アクセスポイント経由でタスクにマウントする。タスクが増えても、アップロードしたファイルをタスクどうしで共有できる |
 | ALB | HTTP(80)で受け付け、パス`/`でヘルスチェックする。200と302を正常とみなす |
 | DBのパスワード | Systems Manager Parameter StoreのSecureStringに置く。CloudFormationが動的参照でRDSに設定し、タスクはECSのシークレットとして環境変数で受け取る |

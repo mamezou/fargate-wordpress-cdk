@@ -121,7 +121,7 @@
         <mxCell id="rds" parent="1" style="fontFamily=IPAPGothic;sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#C925D1;strokeColor=none;html=1;aspect=fixed;shape=mxgraph.aws4.rds_instance;" value="" vertex="1">
           <mxGeometry height="60" width="60" x="1155" y="335" as="geometry" />
         </mxCell>
-        <mxCell id="rds-label" parent="1" style="fontFamily=IPAPGothic;text;html=1;fontSize=12;fontStyle=0;align=center;verticalAlign=top;fontColor=#232F3E;whiteSpace=wrap;labelBackgroundColor=#FFFFFF;" value="&lt;b&gt;Amazon RDS for MySQL 8.0&lt;/b&gt;&lt;br&gt;db.t3.micro・シングル AZ" vertex="1">
+        <mxCell id="rds-label" parent="1" style="fontFamily=IPAPGothic;text;html=1;fontSize=12;fontStyle=0;align=center;verticalAlign=top;fontColor=#232F3E;whiteSpace=wrap;labelBackgroundColor=#FFFFFF;" value="&lt;b&gt;Amazon RDS for MySQL 8.4&lt;/b&gt;&lt;br&gt;db.t3.micro・シングル AZ" vertex="1">
           <mxGeometry height="40" width="200" x="1085" y="398" as="geometry" />
         </mxCell>
         <mxCell id="gwep" parent="1" style="fontFamily=IPAPGothic;sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=none;html=1;aspect=fixed;shape=mxgraph.aws4.endpoints;" value="" vertex="1">

@@ -20,7 +20,7 @@ export class databaseStack extends Stack {
      * Create Amazon RDS
      */
     const mysql = new rds.DatabaseInstance(this, 'wpDatabase', {
-      engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.VER_8_0 }),
+      engine: rds.DatabaseInstanceEngine.mysql({ version: rds.MysqlEngineVersion.of('8.4', '8.4') }),
       vpc: props.vpc,
       vpcSubnets: {
         subnetGroupName: 'database'
