@@ -1,3 +1,5 @@
+> **このリポジトリは 2026-11-18 に [training-demos の aws/architecting-on-aws/fargate-wordpress-cdk](https://github.com/mamezou/training-demos/tree/main/aws/architecting-on-aws/fargate-wordpress-cdk) へ移しました。** これからの更新は移動先で行います。このリポジトリはアーカイブして、更新しません。
+
 # fargate-wordpress-cdk
 
 WordPressをAWS Fargateのコンテナで動かす環境を、AWS CDKで作るリポジトリです。タスクはFargate Spotで動き、CPUとメモリの使用率がそれぞれ50%になるよう、1〜10個の間で増減します。リージョンは東京(ap-northeast-1)を使います。
